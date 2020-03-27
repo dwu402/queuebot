@@ -1,10 +1,10 @@
-import discord
+import discord, os
 from discord.ext import commands
 
 prefix = "!"
 client = commands.Bot(command_prefix=prefix)
 
-approved_roles = ['Tutor']
+approved_roles = ['Tutor', 'Admin']
 spam_channels = ['spam']
 waiting_room = 'Waiting Room'
 queue_channel = 'queue'
@@ -99,7 +99,7 @@ class Queue(commands.Cog):
             member = discord.utils.get(
                 ctx.guild.members, id=self.queue[0])
             channel = discord.utils.get(ctx.guild.text_channels, name=queue_channel)
-            await channel.send(f'You are up **{member.mention}**! Have fun!')
+            await channel.send(f'You are up **{member.mention}**! Please join channel **{member.roles[-1]}**.')
             self.queue.remove(self.queue[0])
         await ctx.message.delete()
 
@@ -108,10 +108,10 @@ class Queue(commands.Cog):
     async def _bye(self, ctx):
         role = [s for s in ctx.guild.roles 
                 if s.name.lower()==ctx.channel.name.lower()][0]
-        waiting_room = discord.utils.get(ctx.guild.voice_channels, name=waiting_room)
+        waiting_room_obj = discord.utils.get(ctx.guild.voice_channels, name=waiting_room)
         for member in role.members:
             await member.remove_roles(role)
-            await member.move_to(waiting_room)
+            await member.move_to(waiting_room_obj)
 
     @is_approved()
     @commands.command(pass_Context=True, name='pull')
@@ -151,4 +151,9 @@ class Queue(commands.Cog):
 client.add_cog(Queue(client))
 
 if __name__ == "__main__":
-    client.run('YOUR_TOKEN_HERE')
+    if os.path.isfile('../mytoken.txt'):
+        with open('../mytoken.txt', 'r') as fp:
+            tkn = ''.join(fp.readlines()).replace('\n','')
+    else:
+        raise FileIOError("Cannot find token file '../mytoken.txt'")
+    client.run(tkn)
