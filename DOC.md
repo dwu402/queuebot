@@ -122,7 +122,7 @@ An elevated Admin role can be created to grant the latter two permissions (which
 
 Also: Name that you gave the bot
 
-Note: This role is automatically created with the bot. You will need to move this role above any of the roles you create below in the [Meeting Rooms section](#meeting-rooms).
+Note: This role may be automatically created with the bot. You will need to move this role above any of the roles you create below in the [Meeting Rooms section](#meeting-rooms).
 
 Permissions:
 
@@ -222,7 +222,7 @@ Permissions:
 
 #### Meeting Rooms
 
-Each meeting room is a pair of channels that are named identically. It is recommended to separate the meeting room channels in a separate Category (right click on channels list). 
+Each meeting room is a pair of channels that are named identically. It is recommended to separate the meeting room channels in a separate, new Category (right click on channels list > Create Category).
 
 Canonically, we will name them with the Greek alphabet, feel free to choose the names of the channels.
 
