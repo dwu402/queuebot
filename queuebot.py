@@ -4,8 +4,10 @@ from discord.ext import commands
 prefix = "!"
 client = commands.Bot(command_prefix=prefix)
 
-approved_roles = ['Admin', 'Lecturer', 'TA']
-spam_channels = ['spam', 'test']
+approved_roles = ['Tutor']
+spam_channels = ['spam']
+waiting_room = 'Waiting Room'
+queue_channel = 'queue'
 
 @client.event
 async def on_ready():
@@ -96,7 +98,7 @@ class Queue(commands.Cog):
         if len(self.queue) > 0:
             member = discord.utils.get(
                 ctx.guild.members, id=self.queue[0])
-            channel = discord.utils.get(ctx.guild.text_channels, name='queue')
+            channel = discord.utils.get(ctx.guild.text_channels, name=queue_channel)
             await channel.send(f'You are up **{member.mention}**! Have fun!')
             self.queue.remove(self.queue[0])
         await ctx.message.delete()
@@ -106,7 +108,7 @@ class Queue(commands.Cog):
     async def _bye(self, ctx):
         role = [s for s in ctx.guild.roles 
                 if s.name.lower()==ctx.channel.name.lower()][0]
-        waiting_room = discord.utils.get(ctx.guild.voice_channels, name='Waiting Room')
+        waiting_room = discord.utils.get(ctx.guild.voice_channels, name=waiting_room)
         for member in role.members:
             await member.remove_roles(role)
             await member.move_to(waiting_room)
@@ -142,7 +144,7 @@ class Queue(commands.Cog):
         else:
             state = 'CLOSED'
         await ctx.send(f'Queue is now {state}')
-        qchannel = discord.utils.get(ctx.guild.text_channels, name='queue')
+        qchannel = discord.utils.get(ctx.guild.text_channels, name=queue_channel)
         if ctx.channel != qchannel:
             await qchannel.send(f'Queue is now {state}')
 
