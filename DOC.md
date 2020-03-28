@@ -56,7 +56,7 @@ Examples
 ```
 python queuebot.py my_config.yml
 
-> runs Queuebot with 
+> runs Queuebot with config options from my_config.yml
 
 python queuebot my_config --noop
 
