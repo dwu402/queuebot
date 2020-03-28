@@ -1,0 +1,261 @@
+queuebot:
+  prefix: '!'
+  role: queuebot
+  Nchannels: 4
+  admin_channels:
+    - admin
+  waiting_room: Waiting Room
+  queue_channel: queue
+  token: ''
+
+spam_channels:
+  - spam
+approved_roles:
+  - Tutor
+
+permissions:
+  tutor_role:
+    on:
+      - add_reactions
+      - attach_files
+      - change_nickname
+      - connect
+      - create_instant_invite
+      - deafen_members
+      - embed_links
+      - external_emojis
+      - kick_members
+      - manage_channels
+      - manage_emojis
+      - manage_guild
+      - manage_message
+      - manage_permissions
+      - manage_roles
+      - manage_webhooks
+      - mention_everyone
+      - move_members
+      - mute_members
+      - read_message_history
+      - read_messages
+      - send_messages
+      - send_tts_messages
+      - speak
+      - stream
+      - use_external_emojis
+      - use_voice_activation
+      - view_audit_log
+      - view_channel
+      - view_guild_insights
+    off:
+      - ban_members
+      - manage_nicknames
+      - priority_speaker
+  meeting_role:
+    on:
+      - use_voice_activation
+      - stream
+    off:
+      - add_reactions
+      - attach_files
+      - ban_members
+      - change_nickname
+      - connect
+      - create_instant_invite
+      - deafen_members
+      - embed_links
+      - external_emojis
+      - kick_members
+      - manage_channels
+      - manage_emojis
+      - manage_guild
+      - manage_message
+      - manage_nicknames
+      - manage_permissions
+      - manage_roles
+      - manage_webhooks
+      - mention_everyone
+      - move_members
+      - mute_members
+      - priority_speaker
+      - read_message_history
+      - read_messages
+      - send_messages
+      - send_tts_messages
+      - speak
+      - use_external_emojis
+      - view_audit_log
+      - view_channel
+      - view_guild_insights
+  meeting_text_read:
+    on:
+      - read_messages
+  member_meeting_text:
+    on:
+      - read_messages
+      - send_message
+      - embed_links
+      - attach_files
+      - add_reactions
+    off:
+      - read_message_history
+  everyone_meeting_text:
+    off:
+      - read_messages
+  tutor_meeting_voice:
+    on:
+      - create_instant_invite
+      - manage_channels
+      - manage_permissions
+      - manage_webhooks
+      - view_channel
+      - connect
+      - speak
+      - mute_members
+      - deafen_members
+      - move_members
+      - use_voice_activation
+      - stream
+  bot_meeting_voice:
+    on:
+      - view_channel
+      - move_members
+  member_meeting_voice:
+    on:
+      - view_channel
+      - connect
+      - speak
+      - use_voice_activation
+      - stream
+    off:
+      - create_instant_invite
+      - manage_channels
+      - manage_permissions
+      - manage_webhooks
+      - mute_members
+      - deafen_members
+      - move_members
+  everyone_meeting_voice:
+    off:
+      - view_channel
+      - create_instant_invite
+      - manage_channels
+      - manage_permissions
+      - manage_webhooks
+      - mute_members
+      - deafen_members
+      - move_members
+      - connect
+      - speak
+      - use_voice_activation
+      - priority_speaker
+      - stream
+  welcome:
+    on:
+      - read_messages
+      - read_message_history
+    off:
+      - create_instant_invite
+      - manage_channels
+      - manage_permissions
+      - manage_webhooks
+      - send_message
+      - send_tts_messages
+      - manage_messages
+      - embed_links
+      - attach_files
+      - mention
+      - use_external_emojis
+      - add_reactions
+  chatter:
+    on:
+      - read_messages
+      - read_message_history
+      - send_message
+      - embed_links
+      - attach_files
+      - use_external_emojis
+      - add_reactions
+    off:
+      - create_instant_invite
+      - manage_channels
+      - manage_permissions
+      - manage_webhooks
+      - send_tts_messages
+      - manage_messages
+      - mention
+  everyone_admin:
+    off:
+      - read_messages
+  bot_admin:
+    on:
+      - read_messages
+      - send_message
+  tutor_admin:
+    on:
+      - read_messages
+      - send_message
+  tutor_waiting_room:
+    on:
+      - speak
+      - move_members
+  everyone_waiting_room:
+    on:
+      - view_channel
+      - connect
+    off:
+      - create_instant_invite
+      - manage_channels
+      - manage_permissions
+      - manage_webhooks
+      - mute_members
+      - deafen_members
+      - move_members
+      - speak
+      - use_voice_activation
+      - priority_speaker
+      - stream
+
+welcome_text: |-
+  Welcome!
+  Please enter the queue in `#queue` and join the `Waiting Room`.
+  You will be moved into a room when a Tutor becomes available.
+
+  Available Bot Commands:
+  -----------------------------------
+  `!add`: Add yourself to the queue
+  `!remove`: Remove yourself from the queue
+  ------------------------------------
+  In the `#spam` channel:
+  `!position`: Your position in the queue
+  `!queue`: Next up in the queue
+
+  Rules:
+  ----------------------------------
+  Be respectful.
+  No NSFW.
+  Ensure your nickname is reflective of your name.
+
+channel_names:
+  - Alpha
+  - Beta
+  - Gamma
+  - Delta
+  - Epsilon
+  - Zeta
+  - Eta
+  - Theta
+  - Iota
+  - Kappa
+  - Lambda
+  - Mu
+  - Nu
+  - Xi
+  - Omicron
+  - Pi
+  - Rho
+  - Sigma
+  - Tau
+  - Upsilon
+  - Phi
+  - Psi
+  - Omega

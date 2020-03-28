@@ -1,117 +1,165 @@
 import discord, os
 from discord.ext import commands
 from copy import copy
+import yaml
+import sys
 
-prefix = "!"
-client = commands.Bot(command_prefix=prefix)
+# Load and update defaults with config file specified in inputs
+with open('defaults.yml', 'r') as defaults_file:
+    config = yaml.load(defaults_file, Loader=yaml.CLoader)
+if len(sys.argv) > 1 and not sys.argv[1][:2] == "--":
+    with open(sys.argv[1], 'r') as config_file:
+        config_update = yaml.load(config_file, Loader=yaml.CLoader)
+        for field, values in config_update.items():
+            if field in config:
+                config[field].update(values)
+            else:
+                config[field] = values
 
-Nchannels = 4
-channel_names = ('Alpha','Beta','Gamma','Delta','Epsilon','Zeta','Omega','Kappa','Lambda','Theta','Sigma','Iota','Omicron',
-    'Mu','Nu','Xi','Pi','Rho','Tau','Upsilon','Phi','Chi','Psi','Eta')
+def get_permissions(name, overwrite=True):
+    """ Parses permissions from the ingested config dictionary """
+    permission_list = {p:bool(b) for b, ps in config['permissions'][name].items() for p in ps}
+    if overwrite:
+        permission_obj = discord.PermissionOverwrite()
+    elif not overwrite:
+        permission_obj = discord.Permissions()
+    permission_obj.update(**permission_list)
+    return permission_obj
 
-queuebot_role = 'queuebot'
-approved_roles = ['Tutor']
+#---------------------------------------------
+# Permission check functions
+#---------------------------------------------
 
-tutor_permissions = {
-    'add_reactions': True, 'administrator': True, 'attach_files': True, 'ban_members': False, 'change_nickname': True, 'connect': True, 
-'create_instant_invite': True, 'deafen_members': True, 'embed_links': True, 'external_emojis': True, 'kick_members': True, 
-'manage_channels': True, 'manage_emojis': True, 'manage_guild': True, 'manage_message':True,'manage_nicknames':False,
-'manage_permissions':True,'manage_roles':True,'manage_webhooks':True,'mention_everyone':True,'move_members':True,'mute_members':True,
-'priority_speaker':False,'read_message_history':True,'read_messages':True,'send_messages':True,'send_tts_messages':True,'speak':True,
-'stream':True,'use_external_emojis':True,'use_voice_activation':True,'view_audit_log':True,'view_channel':True,'view_guild_insights':True}
-tutor_permission_obj = discord.Permissions()
-tutor_permission_obj.update(**tutor_permissions)
+def _approved_(ctx):
+    author = ctx.message.author
+    if author is ctx.guild.owner:
+        return True
+    if any(role.name in config['approved_roles'] for role in author.roles):
+        return True
 
-meeting_permissions = {
-    'add_reactions': False, 'administrator': False, 'attach_files': False, 'ban_members': False, 'change_nickname': False, 'connect': False, 
-'create_instant_invite': False, 'deafen_members': False, 'embed_links': False, 'external_emojis': False, 'kick_members': False, 
-'manage_channels': False, 'manage_emojis': False, 'manage_guild': False, 'manage_message':False,'manage_nicknames':False,
-'manage_permissions':False,'manage_roles':False,'manage_webhooks':False,'mention_everyone':False,'move_members':False,'mute_members':False,
-'priority_speaker':False,'read_message_history':False,'read_messages':False,'send_messages':False,'send_tts_messages':False,'speak':False,
-'stream':True,'use_external_emojis':False,'use_voice_activation':True,'view_audit_log':False,'view_channel':False,'view_guild_insights':False}
-meeting_permission_obj = discord.Permissions()
-meeting_permission_obj.update(**meeting_permissions)
+def _spam_(ctx):
+    channel = ctx.channel
+    if channel.name in config['spam_channels']:
+        return True
 
-tr_ow_t = discord.PermissionOverwrite()
-tr_ow_t.update(**{'read_messages':True})
-qbr_ow_t = discord.PermissionOverwrite()
-qbr_ow_t.update(**{'read_messages':True})
-mr_ow_t = discord.PermissionOverwrite()
-mr_ow_t.update(**{'read_messages':True,'send_message':True,'embed_links':True,'attach_files':True,
-    'read_message_history':False,'add_reactions':True})
-er_ow_t = discord.PermissionOverwrite()
-er_ow_t.update(**{'read_messages':False})
-
-tr_ow_v = discord.PermissionOverwrite()
-tr_ow_v.update(**{'create_instant_invite':True,'manage_channels':True,'manage_permissions':True,'manage_webhooks':True,
-    'view_channel':True,'connect':True,'speak':True,'mute_members':True,'deafen_members':True,'move_members':True,
-    'use_voice_activation':True,'stream':True})
-qbr_ow_v = discord.PermissionOverwrite()
-qbr_ow_v.update(**{'view_channel':True,'move_members':True})
-mr_ow_v = discord.PermissionOverwrite()
-mr_ow_v.update(**{'create_instant_invite':False,'manage_channels':False,'manage_permissions':False,'manage_webhooks':False,
-    'view_channel':True,'connect':True,'speak':True,'mute_members':False,'deafen_members':False,'move_members':False,
-    'use_voice_activation':True,'stream':True})
-er_ow_v = discord.PermissionOverwrite()
-er_ow_v.update(**{'create_instant_invite':False,'manage_channels':False,'manage_permissions':False,'manage_webhooks':False,
-    'view_channel':False,'connect':False,'speak':False,'mute_members':False,'deafen_members':False,'move_members':False,
-    'use_voice_activation':False,'priority_speaker':False,'stream':False})
-
-er_ow_wt = discord.PermissionOverwrite()
-er_ow_wt.update(**{'create_instant_invite':False,'manage_channels':False,'manage_permissions':False,'manage_webhooks':False,
-    'read_messages':True,'send_message':False,'send_tts_messages':False,'manage_messages':False,'embed_links':False,
-    'attach_files':False,'read_message_history':True,'mention':False,'use_external_emojis':False,'add_reactions':False})
-
-er_ow_ch = discord.PermissionOverwrite()
-er_ow_ch.update(**{'create_instant_invite':False,'manage_channels':False,'manage_permissions':False,'manage_webhooks':False,
-    'read_messages':True,'send_message':True,'send_tts_messages':False,'manage_messages':False,'embed_links':True,
-    'attach_files':True,'read_message_history':True,'mention':False,'use_external_emojis':True,'add_reactions':True})   
-
-er_ow_ad = discord.PermissionOverwrite()
-er_ow_ad.update(**{'read_messages':False})
-qbr_ow_ad = discord.PermissionOverwrite()
-qbr_ow_ad.update(**{'read_messages':True,'send_messages':True})
-tr_ow_ad = discord.PermissionOverwrite()
-tr_ow_ad.update(**{'read_messages':True,'send_messages':True})
-
-tr_ow_wr = discord.PermissionOverwrite()
-tr_ow_wr.update(**{'view_channel':True,'connect':True,'speak':True,'move_members':True})
-er_ow_wr = discord.PermissionOverwrite()
-er_ow_wr.update(**{'create_instant_invite':False,'manage_channels':False,'manage_permissions':False,'manage_webhooks':False,
-    'view_channel':True,'connect':True,'speak':False,'mute_members':False,'deafen_members':False,'move_members':False,
-    'use_voice_activation':False,'stream':False})
-
-spam_channels = ['spam']
-waiting_room = 'Waiting Room'
-queue_channel = 'queue'
-
-@client.event
-async def on_ready():
-    print(client.user.name)
-    print(client.user.id)
-    await client.change_presence(activity=discord.Game(name='Queuing Fun'))
+def _owner_(ctx):
+    owner = ctx.guild.owner
+    if ctx.author == owner:
+        return True
 
 def is_approved():
-    def predicate(ctx):
-        author = ctx.message.author
-        if author is ctx.guild.owner:
-            return True
-        if any(role.name in approved_roles for role in author.roles):
-            return True
-    return commands.check(predicate)
+    return commands.check(_approved_)
 
 def is_spam():
+    return commands.check(_spam_)
+
+def is_starter():
     def predicate(ctx):
-        channel = ctx.channel
-        if channel.name in spam_channels:
-            return True
+        return _approved_(ctx) or _owner_(ctx)
     return commands.check(predicate)
 
 class Queue(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, client):
+        self.bot = client
         self.queue = []
         self.qtoggle = False
+        self.config = config['queuebot']
+        self.role = self.config['role']
+
+    @is_starter()
+    @commands.command(pass_context=True)
+    async def start(self, ctx):
+        ''': Sets up roles and channels'''
+        # check Queuebot has permissions to do its job
+        if not any(role.name.lower() == self.role.lower() for role in ctx.guild.roles):
+            raise ValueError(f'Cannot find Queuebot role: {self.role}.')
+        qbr = [role for role in ctx.guild.roles if role.name.lower() == self.role.lower()][0]
+        qb = [member for member in ctx.guild.members if member.name.lower() == self.role.lower()][0]
+        if qbr not in qb.roles:
+            raise ValueError(f'Queuebot role ({self.role}) not assigned to queuebot ({qb.name})')
+
+        # remove general channels if existing
+        gt = discord.utils.get(ctx.guild.text_channels, name='general')
+        if gt:
+            await gt.delete()
+        gt = discord.utils.get(ctx.guild.voice_channels, name='General')
+        if gt:
+            await gt.delete()
+
+        # Extract permissions from config
+        tutor_permission_obj = get_permissions('tutor_role', overwrite=False)
+        meeting_permission_obj = get_permissions('meeting_role', overwrite=False)
+
+        tr_ow_t = get_permissions('meeting_text_read')
+        qbr_ow_t = get_permissions('meeting_text_read')
+        mr_ow_t = get_permissions('member_meeting_text')
+        er_ow_t = get_permissions('everyone_meeting_text')
+
+        tr_ow_v = get_permissions('tutor_meeting_voice')
+        qbr_ow_v = get_permissions('bot_meeting_voice')
+        mr_ow_v = get_permissions('member_meeting_voice')
+        er_ow_v = get_permissions('everyone_meeting_voice')
+
+        er_ow_wt = get_permissions('welcome')
+        er_ow_ch = get_permissions('chatter')
+        er_ow_ad = get_permissions('everyone_admin')
+        qbr_ow_ad = get_permissions('bot_admin')
+        tr_ow_ad = get_permissions('tutor_admin')
+        tr_ow_wr = get_permissions('tutor_waiting_room')
+        er_ow_wr = get_permissions('everyone_waiting_room')
+
+        # create Roles if not already existing
+        if not discord.utils.get(ctx.guild.roles, name='Tutor'):
+            await ctx.guild.create_role(name='Tutor', permissions = tutor_permission_obj, hoist=True)
+        tr = discord.utils.get(ctx.guild.roles, name='Tutor')
+        er = discord.utils.get(ctx.guild.roles, name='@everyone')
+
+        # create meeting rooms if not already existing
+        if not discord.utils.get(ctx.guild.categories, name='Meeting Rooms'):
+            await ctx.guild.create_category('Meeting Rooms')
+        mct = discord.utils.get(ctx.guild.categories, name='Meeting Rooms')
+        tct = discord.utils.get(ctx.guild.categories, name='Text Channels')
+        vct = discord.utils.get(ctx.guild.categories, name='Voice Channels')
+        
+        text_overwrites = {tr:tr_ow_t, qbr:qbr_ow_t, er:er_ow_t}
+        voice_overwrites = {tr:tr_ow_v, qbr:qbr_ow_v, er:er_ow_v}
+        for channel_name in config['channel_names'][:self.config['Nchannels']]:
+            # create role
+            if not discord.utils.get(ctx.guild.roles, name=channel_name):
+                await ctx.guild.create_role(name = channel_name, permissions = meeting_permission_obj)
+            mr = discord.utils.get(ctx.guild.roles, name=channel_name)
+
+            # create text channel
+            channel_overwrites = copy(text_overwrites)
+            channel_overwrites.update({mr:mr_ow_t})
+            if not discord.utils.get(ctx.guild.text_channels, name=channel_name.lower()):
+                await ctx.guild.create_text_channel(name = channel_name.lower(), category=mct, overwrites=channel_overwrites)
+                
+            # create voice channel
+            channel_overwrites = copy(voice_overwrites)
+            channel_overwrites.update({mr:mr_ow_v})
+            if not discord.utils.get(ctx.guild.voice_channels, name=channel_name):
+                await ctx.guild.create_voice_channel(name = channel_name, category=mct, overwrites=channel_overwrites)
+
+        # create queue/welcome/chatter/admin/Waiting Room channels
+        if not discord.utils.get(ctx.guild.text_channels, name='welcome'):
+            await ctx.guild.create_text_channel(name = 'welcome', overwrites={er:er_ow_wt}, category=tct)
+            wt = discord.utils.get(ctx.guild.text_channels, name='welcome')
+            await wt.send(config['welcome_text'])
+        if not discord.utils.get(ctx.guild.text_channels, name='chatter'):
+            await ctx.guild.create_text_channel(name = 'chatter', overwrites={er:er_ow_ch}, category=tct)
+        if not discord.utils.get(ctx.guild.text_channels, name=self.config['queue_channel']):
+            await ctx.guild.create_text_channel(name = self.config['queue_channel'], category=tct, slowmode_delay=15)
+        for spam_channel in config['spam_channels']:
+            if not discord.utils.get(ctx.guild.text_channels, name=spam_channel):
+                await ctx.guild.create_text_channel(name = spam_channel, category=tct, slowmode_delay=5)
+        for admin_channel in self.config['admin_channels']:
+            if not discord.utils.get(ctx.guild.text_channels, name=admin_channel):
+                await ctx.guild.create_text_channel(name = admin_channel, overwrites={er:er_ow_ad,qbr:qbr_ow_ad,tr:tr_ow_ad}, category=tct)
+        if not discord.utils.get(ctx.guild.voice_channels, name=self.config['waiting_room']):
+            await ctx.guild.create_voice_channel(name = self.config['waiting_room'], overwrites={er:er_ow_wr,tr:tr_ow_wr}, category=vct)
+
+        await self.toggle(ctx)
 
     @commands.command(pass_context=True)
     async def add(self, ctx):
@@ -174,7 +222,7 @@ class Queue(commands.Cog):
         if len(self.queue) > 0:
             member = discord.utils.get(
                 ctx.guild.members, id=self.queue[0])
-            channel = discord.utils.get(ctx.guild.text_channels, name=queue_channel)
+            channel = discord.utils.get(ctx.guild.text_channels, name=self.config['queue_channel'])
             await channel.send(f'You are up **{member.mention}**! Please join channel **{member.roles[-1]}**.')
             self.queue.remove(self.queue[0])
         await ctx.message.delete()
@@ -184,7 +232,8 @@ class Queue(commands.Cog):
     async def _bye(self, ctx):
         role = [s for s in ctx.guild.roles 
                 if s.name.lower()==ctx.channel.name.lower()][0]
-        waiting_room_obj = discord.utils.get(ctx.guild.voice_channels, name=waiting_room)
+        waiting_room_obj = discord.utils.get(ctx.guild.voice_channels, 
+                                             name=self.config['waiting_room'])
         for member in role.members:
             await member.remove_roles(role)
             await member.move_to(waiting_room_obj)
@@ -198,7 +247,10 @@ class Queue(commands.Cog):
             role = [s for s in ctx.guild.roles 
                     if s.name.lower()==ctx.channel.name.lower()][0]
             await member.add_roles(role)
-            await ctx.send(f'{member.nick} is up next')
+            if member.nick:
+                await ctx.send(f'{member.nick} is up next')
+            else:
+                await ctx.send(f'{member.name} is up next')
             await self._next(ctx)
         else:
             await ctx.send('Queue is empty')
@@ -220,89 +272,26 @@ class Queue(commands.Cog):
         else:
             state = 'CLOSED'
         await ctx.send(f'Queue is now {state}')
-        qchannel = discord.utils.get(ctx.guild.text_channels, name=queue_channel)
+        qchannel = discord.utils.get(ctx.guild.text_channels, name=self.config['queue_channel'])
         if ctx.channel != qchannel:
             await qchannel.send(f'Queue is now {state}')
-    
-    @is_approved()
-    @commands.command(pass_context=True)
-    async def start(self, ctx):
-        ''': Sets up roles and channels'''
-        # check Queuebot has permissions to do its job
-        if not any(role.name.lower() == queuebot_role for role in ctx.guild.roles):
-            raise ValueError('Cannot find Queuebot role.')
-        qbr = [role for role in ctx.guild.roles if role.name.lower() == queuebot_role][0]
-        qb = [member for member in ctx.guild.members if member.name.lower() == queuebot_role][0]
-        if qbr not in qb.roles:
-            raise ValueError('Queuebot role not assigned to queuebot')
 
-        # remove general channels if existing
-        gt = discord.utils.get(ctx.guild.text_channels, name='general')
-        if gt:
-            await gt.delete()
-        gt = discord.utils.get(ctx.guild.voice_channels, name='General')
-        if gt:
-            await gt.delete()
+#---------------------------------------------------------
+# Bot Creation 
+#--------------------------------------------------------
+client = commands.Bot(command_prefix=config['queuebot']['prefix'])
 
-        # create Roles if not already existing
-        if not discord.utils.get(ctx.guild.roles, name='Tutor'):
-            await ctx.guild.create_role(name='Tutor', permissions = tutor_permission_obj, hoist=True)
-        tr = discord.utils.get(ctx.guild.roles, name='Tutor')
-        er = discord.utils.get(ctx.guild.roles, name='@everyone')
-
-        # create meeting rooms if not already existing
-        if not discord.utils.get(ctx.guild.categories, name='Meeting Rooms'):
-            await ctx.guild.create_category('Meeting Rooms')
-        mct = discord.utils.get(ctx.guild.categories, name='Meeting Rooms')
-        tct = discord.utils.get(ctx.guild.categories, name='Text Channels')
-        vct = discord.utils.get(ctx.guild.categories, name='Voice Channels')
-        
-        text_overwrites = {tr:tr_ow_t, qbr:qbr_ow_t, er:er_ow_t}
-        voice_overwrites = {tr:tr_ow_v, qbr:qbr_ow_v, er:er_ow_v}
-        for channel_name in channel_names[:Nchannels]:
-            # create role
-            if not discord.utils.get(ctx.guild.roles, name=channel_name):
-                await ctx.guild.create_role(name = channel_name, permissions = meeting_permission_obj)
-            mr = discord.utils.get(ctx.guild.roles, name=channel_name)
-
-            # create text channel
-            channel_overwrites = copy(text_overwrites)
-            channel_overwrites.update({mr:mr_ow_t})
-            if not discord.utils.get(ctx.guild.text_channels, name=channel_name.lower()):
-                await ctx.guild.create_text_channel(name = channel_name.lower(), category=mct, overwrites=channel_overwrites)
-                
-            # create voice channel
-            channel_overwrites = copy(voice_overwrites)
-            channel_overwrites.update({mr:mr_ow_v})
-            if not discord.utils.get(ctx.guild.voice_channels, name=channel_name):
-                await ctx.guild.create_voice_channel(name = channel_name, category=mct, overwrites=channel_overwrites)
-
-        # create queue/welcome/chatter/admin/Waiting Room channels
-        if not discord.utils.get(ctx.guild.text_channels, name='welcome'):
-            await ctx.guild.create_text_channel(name = 'welcome', overwrites={er:er_ow_wt}, category=tct)
-            wt = discord.utils.get(ctx.guild.text_channels, name='welcome')
-            with open('welcome.txt','r') as fp:
-                await wt.send(''.join(fp.readlines()))
-        if not discord.utils.get(ctx.guild.text_channels, name='chatter'):
-            await ctx.guild.create_text_channel(name = 'chatter', overwrites={er:er_ow_ch}, category=tct)
-        if not discord.utils.get(ctx.guild.text_channels, name='queue'):
-            await ctx.guild.create_text_channel(name = 'queue', category=tct)
-        if not discord.utils.get(ctx.guild.text_channels, name='spam'):
-            await ctx.guild.create_text_channel(name = 'spam', category=tct)
-        if not discord.utils.get(ctx.guild.text_channels, name='admin'):
-            await ctx.guild.create_text_channel(name = 'admin', overwrites={er:er_ow_ad,qbr:qbr_ow_ad,tr:tr_ow_ad}, category=tct)
-        if not discord.utils.get(ctx.guild.voice_channels, name='Waiting Room'):
-            await ctx.guild.create_voice_channel(name = 'Waiting Room', overwrites={er:er_ow_wr,tr:tr_ow_wr}, category=vct)
-
-        await self.toggle(ctx)   
-        return
+@client.event
+async def on_ready():
+    print(client.user.name)
+    print(client.user.id)
+    await client.change_presence(activity=discord.Game(name='Queuing Fun'))
 
 client.add_cog(Queue(client))
 
 if __name__ == "__main__":
-    if os.path.isfile('../mytoken.txt'):
-        with open('../mytoken.txt', 'r') as fp:
-            tkn = ''.join(fp.readlines()).replace('\n','')
-    else:
-        raise FileNotFoundError("Cannot find token file '../mytoken.txt'")
-    client.run(tkn)
+    if config['queuebot']['token'] and "--noop" not in sys.argv:
+        client.run(config['queuebot']['token'])
+    elif "--noop" in sys.argv:
+        from pprint import PrettyPrinter
+        PrettyPrinter(indent=2).pprint(config)

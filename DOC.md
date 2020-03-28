@@ -14,17 +14,21 @@ You will need to create a Discord account, if you do not already have one. The p
 
 ## Creating the Bot
 
-### The Inanimate Pieces
+### The Experiment Table - Prerequisites
 
-The script (`queuebot.py`) uses the discord.py library:
+The script (`queuebot.py`) uses the discord.py and pyYAML libraries:
 
 ```
-pip install discord.py
+pip install -r requirements.txt
 ```
 
 or similar.
 
 The bot is adapted from [`stroupbslayen`'s `queue-bot`](https://github.com/stroupbslayen/Other-Discord-Bots-async/tree/master/queue-bot).
+
+### The Inanimate Pieces - The Server
+
+You will need to create a server on Discord, by using the "Add a Server" button on the left bar of the Discord application. Ignore the popup on creation that prompts you to add people to the server - this will be taken care of later.
 
 ### The Bolt of Lightning - Bot Token
 
@@ -39,21 +43,52 @@ The bot is adapted from [`stroupbslayen`'s `queue-bot`](https://github.com/strou
 8. Navigate to the `OAuth2` section on the left
 9. Enable the `bot` scope
 10. Copy and paste the resulting url in the scopes section into a new tab/window of your browser
-11. Add the bot to your server. (See [below](#Server-Creation) for server creation)
+11. Add the bot to your server.
 
-### It's ALIVE
+### It's ALIVE - Running the bot
 
-Run the bot with
-
+Invokation from command line
 ```
-python queuebot.py
+python queuebot.py CONFIG_FILE_PATH [--noop]
 ```
 
-## Server Creation
+Examples
+```
+python queuebot.py my_config.yml
 
-You will need to create a server on Discord, by using the "Add a Server" button on the left bar of the Discord application. Ignore the popup on creation that prompts you to add people to the server - this will be taken care of later.
+> runs Queuebot with config options from my_config.yml
 
-### Info Box: Channels
+python queuebot my_config --noop
+
+> prints configuration options
+```
+
+### Hunting Your Frankenstein - Performing Setup
+
+We have provided automated setup with this bot.
+
+1. Create the bot's role following the [specification](#Role:-Queuebot)
+2. Assign the bot with the role
+3. Send `!start` in a text channel
+
+## Commands
+
+Commands are used to interact with the bot. Some commands are restricted, and only available to users with the Tutor role (or similar, as specified in the script), and some are only available in specified channels.
+
+| Command Invokation | Restricted | Available Channels | Effect | Notes | 
+|:-:|:-:|:-:|:--------|:-|
+| `!add` | No | all | Adds the invoking user to the end of the queue. Deletes the invoking message | |
+| `!remove` | No | all | Removes the invoking user from the queue. Deletes the invoking message. | |
+| `!position` | No | spam | Reports the invoking user's position in the queue. Deletes the invoking message | |
+| `!queue` | No | spam | Reports the first five users in the queue. Deletes the invoking message | |
+| `!next` | Yes | all | Pops the next person in the queue and sends a message into #queue mentioning them | deprecated, do not use|
+| `!pull` | Yes | meeting room | Sends a message into #queue mentioning the next person in the queue and assigns them the role corresponding to the meeting room this command was invoked in | |
+| `!bye` | Yes | meeting room | Removes the role corresponding to this meeting room for all users, and moves those users into the Waiting Room | |
+| `!toggle` | Yes | all | Turns the queue on or off, and sends a message into #queue as well as the channel this command was invoked in regarding the state of the queue (ON or OFF) | |
+| `!clear` | Yes | all | Clears the queue | |
+
+
+## Info Box: Channels
 
 Channels are sub-areas of Discord that allow for communication between people. There are two types of channels:
 
@@ -64,29 +99,15 @@ Text channels are typically used for chat-style text communication (ala Slack, M
 
 Voice channels are typically used as small rooms for voice calls. These channels also have the "Go Live" functionality which allow screen sharing.
 
-### Channel Creation
-
-As a bare minimum, you will need to create:
-
-- #queue: A (public) text channel for interacting with the bot and allowing the bot to post queue-based messages to.
-- Waiting Room: A (public) voice channel for students to be sent to after their 1-on-1 meeting
-
-Additionally, you may want:
-
-- #welcome/#rules: A (public) text channel for laying our server rules, that people see on joining
-- #chatter/#general: A (public) text channel for text communication (not related to queuing)
-- #admin: A (private) text channel for queue administration
-- #spam: A (public) text channel for queue-related commands that dump a large amount of text
-
-### Permissions: List of Roles and Channels
+## Specification
 
 The permission model on Discord revolves around roles. Roles are sets of permissions that can be granted to individual users, that enable or prohibit them from performing certain actions.
 
-#### Roles
+### Roles
 
 Roles are managed from `Dropdown next to the server name > Server Settings > Roles`. Roles can be added with the (+) symbol next to `Roles`. 
 
-##### Role: @everyone
+#### Role: @everyone
 
 This is the baseline permission set. Recommended permissions (all others disabled):
 
@@ -104,11 +125,11 @@ This is the baseline permission set. Recommended permissions (all others disable
 
 This baseline will allow them to communicate in any text or voice channel that does not otherwise restrict their actions.
 
-##### Role: Tutor
+#### Role: Tutor
 
 Also: Admin, TA, Lecturer
 
-Note: These should be listed in the script as `approved_roles`
+Note: These should be listed in the configuration as `approved_roles`
 
 This role is an admin role, and it is recommended to be granted all permissions, __except__:
 
@@ -118,7 +139,7 @@ This role is an admin role, and it is recommended to be granted all permissions,
 
 An elevated Admin role can be created to grant the latter two permissions (which can adversely affect student engagement)
 
-##### Role: Queuebot
+#### Role: Queuebot
 
 Also: Name that you gave the bot
 
@@ -126,19 +147,14 @@ Note: This role may be automatically created with the bot. You will need to move
 
 Permissions:
 
-- Display role members separately from online members
-- Manage Roles
-- Read Text Channels & See Voice Channels
-- Send Messages
-- Manage Messages
-- Embed Links
-- Read Message History
-- Connect
-- Move Members
+All except
+
+- Allow anyone to @mention this role
+- Administrator
 
 This will allow the bot to perform its duties.
 
-#### Channels
+### Channels
 
 Channel permissions can be modified via `right-clicking the channel > Edit Channel > Permissions`
 
@@ -220,7 +236,7 @@ Permissions:
   - Connect
   - others disabled `X`
 
-#### Meeting Rooms
+### Meeting Rooms
 
 Each meeting room is a pair of channels that are named identically. It is recommended to separate the meeting room channels in a separate, new Category (right click on channels list > Create Category).
 
@@ -230,7 +246,7 @@ You will also need to create appropriate roles for these meeting rooms (one role
 
 For this documentation, we will use the name `alpha`.
 
-##### Role: Alpha
+#### Role: Alpha
 
 Permissions:
 
@@ -239,7 +255,7 @@ Permissions:
 
 Note: one per meeting room set (this gets tedious).
 
-##### Meeting Room Text Channel: alpha
+#### Meeting Room Text Channel: alpha
 
 Type: text, private
 
@@ -260,7 +276,7 @@ Permissions:
   - __disabled__ (`X)`
     - Read Message History
 
-##### Meeting Room Voice Channel: alpha
+#### Meeting Room Voice Channel: alpha
 
 Type: voice, private
 
@@ -290,19 +306,3 @@ Permissions:
   - View Channel
   - Move Members
 - Tutor: all __enabled__
-
-## Commands
-
-Commands are used to interact with the bot. Some commands are restricted, and only available to users with the Tutor role (or similar, as specified in the script), and some are only available in specified channels.
-
-| Command Invokation | Restricted | Available Channels | Effect | Notes | 
-|:-:|:-:|:-:|:--------|:-|
-| `!add` | No | all | Adds the invoking user to the end of the queue. Deletes the invoking message | |
-| `!remove` | No | all | Removes the invoking user from the queue. Deletes the invoking message. | |
-| `!position` | No | spam | Reports the invoking user's position in the queue. Deletes the invoking message | |
-| `!queue` | No | spam | Reports the first five users in the queue. Deletes the invoking message | |
-| `!next` | Yes | all | Pops the next person in the queue and sends a message into #queue mentioning them | deprecated, do not use|
-| `!pull` | Yes | meeting room | Sends a message into #queue mentioning the next person in the queue and assigns them the role corresponding to the meeting room this command was invoked in | |
-| `!bye` | Yes | meeting room | Removes the role corresponding to this meeting room for all users, and moves those users into the Waiting Room | |
-| `!toggle` | Yes | all | Turns the queue on or off, and sends a message into #queue as well as the channel this command was invoked in regarding the state of the queue (ON or OFF) | |
-| `!clear` | Yes | all | Clears the queue | |

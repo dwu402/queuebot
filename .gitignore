@@ -3,3 +3,4 @@ _run_*.py
 *.pdf
 __pycache__
 .vscode
+_configs/*
