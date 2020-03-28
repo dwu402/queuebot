@@ -148,8 +148,8 @@ class Queue(commands.Cog):
             await wt.send(config['welcome_text'])
         if not discord.utils.get(ctx.guild.text_channels, name='chatter'):
             await ctx.guild.create_text_channel(name = 'chatter', overwrites={er:er_ow_ch}, category=tct)
-        if not discord.utils.get(ctx.guild.text_channels, name='queue'):
-            await ctx.guild.create_text_channel(name = 'queue', category=tct, slowmode_delay=15)
+        if not discord.utils.get(ctx.guild.text_channels, name=self.config['queue_channel']):
+            await ctx.guild.create_text_channel(name = self.config['queue_channel'], category=tct, slowmode_delay=15)
         for spam_channel in config['spam_channels']:
             if not discord.utils.get(ctx.guild.text_channels, name=spam_channel):
                 await ctx.guild.create_text_channel(name = spam_channel, category=tct, slowmode_delay=5)
