@@ -1,3 +1,23 @@
+welcome_text: |-
+  Welcome!
+  Please enter the queue in `#queue` and join the `Waiting Room`.
+  You will be moved into a room when a Tutor becomes available.
+
+  Available Bot Commands:
+  -----------------------------------
+  `!add`: Add yourself to the queue
+  `!remove`: Remove yourself from the queue
+  ------------------------------------
+  In the `#spam` channel:
+  `!position`: Your position in the queue
+  `!queue`: Next up in the queue
+
+  Rules:
+  ----------------------------------
+  Be respectful.
+  No NSFW.
+  Ensure your nickname is reflective of your name.
+  
 queuebot:
   prefix: '!'
   role: queuebot
@@ -214,26 +234,6 @@ permissions:
       - use_voice_activation
       - priority_speaker
       - stream
-
-welcome_text: |-
-  Welcome!
-  Please enter the queue in `#queue` and join the `Waiting Room`.
-  You will be moved into a room when a Tutor becomes available.
-
-  Available Bot Commands:
-  -----------------------------------
-  `!add`: Add yourself to the queue
-  `!remove`: Remove yourself from the queue
-  ------------------------------------
-  In the `#spam` channel:
-  `!position`: Your position in the queue
-  `!queue`: Next up in the queue
-
-  Rules:
-  ----------------------------------
-  Be respectful.
-  No NSFW.
-  Ensure your nickname is reflective of your name.
 
 channel_names:
   - Alpha

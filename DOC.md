@@ -77,14 +77,14 @@ Commands are used to interact with the bot. Some commands are restricted, and on
 
 | Command Invokation | Restricted | Available Channels | Effect | Notes | 
 |:-:|:-:|:-:|:--------|:-|
+| `!start` | Yes | all | Setups up roles and channels, and opens queue. | |
 | `!add` | No | all | Adds the invoking user to the end of the queue. Deletes the invoking message | |
 | `!remove` | No | all | Removes the invoking user from the queue. Deletes the invoking message. | |
 | `!position` | No | spam | Reports the invoking user's position in the queue. Deletes the invoking message | |
 | `!queue` | No | spam | Reports the first five users in the queue. Deletes the invoking message | |
-| `!next` | Yes | all | Pops the next person in the queue and sends a message into #queue mentioning them | deprecated, do not use|
 | `!pull` | Yes | meeting room | Sends a message into #queue mentioning the next person in the queue and assigns them the role corresponding to the meeting room this command was invoked in | |
 | `!bye` | Yes | meeting room | Removes the role corresponding to this meeting room for all users, and moves those users into the Waiting Room | |
-| `!toggle` | Yes | all | Turns the queue on or off, and sends a message into #queue as well as the channel this command was invoked in regarding the state of the queue (ON or OFF) | |
+| `!stop` | Yes | all | Closes queue and deletes meeting room channels. | |
 | `!clear` | Yes | all | Clears the queue | |
 
 

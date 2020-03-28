@@ -161,6 +161,21 @@ class Queue(commands.Cog):
 
         await self.toggle(ctx)
 
+    @is_starter()
+    @commands.command(pass_context=True)
+    async def stop(self, ctx):
+        ''': Nukes roles and channels'''
+        for channel_name in config['channel_names'][:self.config['Nchannels']]:
+            # remove general channels if existing
+            ch = discord.utils.get(ctx.guild.text_channels, name=channel_name.lower())
+            if ch:
+                await ch.delete()
+            ch = discord.utils.get(ctx.guild.voice_channels, name=channel_name)
+            if ch:
+                await ch.delete()
+                
+        await self.toggle(ctx)
+
     @commands.command(pass_context=True)
     async def add(self, ctx):
         ''': Add yourself to the queue!'''
@@ -212,7 +227,7 @@ class Queue(commands.Cog):
             _position = self.queue.index(author.id)+1
             await ctx.send(f'{author.mention}: You are **#{_position}** in the queue.')
         else:
-            await ctx.send(f'{author.mention}: You are not in the queue, please use {prefix}add to add yourself to the queue.')
+            await ctx.send(f'{author.mention}: You are not in the queue, please use {self.config["prefix"]}add to add yourself to the queue.')
         await ctx.message.delete()
 
     @is_approved()
