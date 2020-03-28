@@ -164,17 +164,22 @@ class Queue(commands.Cog):
     @is_starter()
     @commands.command(pass_context=True)
     async def stop(self, ctx):
-        ''': Nukes roles and channels'''
+        ''': Nukes channels, close queue, exit.'''
+        # remove general channels if existing
         for channel_name in config['channel_names'][:self.config['Nchannels']]:
-            # remove general channels if existing
             ch = discord.utils.get(ctx.guild.text_channels, name=channel_name.lower())
             if ch:
                 await ch.delete()
             ch = discord.utils.get(ctx.guild.voice_channels, name=channel_name)
             if ch:
                 await ch.delete()
-                
+            ch = discord.utils.get(ctx.guild.roles, name=channel_name)
+            if ch:
+                await ch.delete()
+        # close queue        
         await self.toggle(ctx)
+        # exit with keyboard interrupt
+        raise KeyboardInterrupt
 
     @commands.command(pass_context=True)
     async def add(self, ctx):
