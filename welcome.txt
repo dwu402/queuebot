@@ -1,0 +1,19 @@
+Welcome to the **ENGSCI233** Lab Server.
+Please enter the queue in `#queue` and join the `Waiting Room`.
+You will be moved into a room when a Tutor becomes available.
+
+Available Bot Commands:
+-----------------------------------
+`!add`: Add yourself to the queue
+`!remove`: Remove yourself from the queue
+------------------------------------
+In the `#spam` channel:
+`!position`: Your position in the queue
+`!queue`: Next up in the queue
+
+Rules:
+----------------------------------
+Adhere to University Policy and Guidelines.
+Do not share code with other students.
+Ensure your nickname is reflective of your name.
+Check Piazza for solutions before joining the queue.

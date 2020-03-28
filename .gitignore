@@ -2,3 +2,4 @@ _run_*.py
 *.pptx
 *.pdf
 __pycache__
+.vscode
