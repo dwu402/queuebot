@@ -11,7 +11,7 @@ if len(sys.argv) > 1 and not sys.argv[1][:2] == "--":
     with open(sys.argv[1], 'r') as config_file:
         config_update = yaml.load(config_file, Loader=yaml.CLoader)
         for field, values in config_update.items():
-            if field in config:
+            if field in config and isinstance(config[field], dict):
                 config[field].update(values)
             else:
                 config[field] = values
