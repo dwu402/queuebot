@@ -38,8 +38,11 @@ You will need to create a server on Discord, by using the "Add a Server" button 
 4. Navigate to the `Bot` section on the left
 5. Create a bot with `Add Bot` > `Yes, do it`.
 6. `Copy` the token
-7. Paste it into the final line of the script:
-   - `client.run('YOUR_TOKEN_HERE')`
+7. Paste it into a configuration file (e.g. `my_config.yml`):
+   ```yaml
+   queuebot:
+     token: YOUR_TOKEN_HERE
+   ```
 8. Navigate to the `OAuth2` section on the left
 9. Enable the `bot` scope
 10. Copy and paste the resulting url in the scopes section into a new tab/window of your browser
