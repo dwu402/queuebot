@@ -6,16 +6,21 @@ import sys
 
 # Load and update defaults with config file specified in inputs
 with open('defaults.yml', 'r') as defaults_file:
-    config = yaml.load(defaults_file, Loader=yaml.CLoader)
+    config = yaml.safe_load(defaults_file)
 if len(sys.argv) > 1 and not sys.argv[1][:2] == "--":
     with open(sys.argv[1], 'r') as config_file:
-        config_update = yaml.load(config_file, Loader=yaml.CLoader)
+        config_update = yaml.safe_load(config_file)
         for field, values in config_update.items():
+<<<<<<< HEAD
             if field in config:
                 if type(config[field]) is dict:
                     config[field].update(values)
                 elif type(config[field]) is list:
                     config[field] += values
+=======
+            if field in config and isinstance(config[field], dict):
+                config[field].update(values)
+>>>>>>> 56949b898723e66b27793e171987bb603bbfcc4e
             else:
                 config[field] = values
                 
