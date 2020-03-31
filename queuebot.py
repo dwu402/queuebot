@@ -12,9 +12,14 @@ if len(sys.argv) > 1 and not sys.argv[1][:2] == "--":
         config_update = yaml.load(config_file, Loader=yaml.CLoader)
         for field, values in config_update.items():
             if field in config:
-                config[field].update(values)
+                if type(config[field]) is dict:
+                    config[field].update(values)
+                elif type(config[field]) is list:
+                    config[field] += values
             else:
                 config[field] = values
+                
+    print(config['approved_roles'])
 
 def get_permissions(name, overwrite=True):
     """ Parses permissions from the ingested config dictionary """
