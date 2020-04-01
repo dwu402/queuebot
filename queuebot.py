@@ -5,16 +5,13 @@ import yaml
 import sys
 
 # Load and update defaults with config file specified in inputs
-with open('defaults.yml', 'r') as defaults_file:
-    config = yaml.safe_load(defaults_file)
 if len(sys.argv) > 1 and not sys.argv[1][:2] == "--":
-    with open(sys.argv[1], 'r') as config_file:
-        config_update = yaml.safe_load(config_file)
-        for field, values in config_update.items():
-            if field in config and isinstance(config[field], dict):
-                config[field].update(values)
-            else:
-                config[field] = values
+    config_file = sys.argv[1]
+else:
+    config_file = 'defaults.yml'
+
+with open(config_file, 'r') as defaults_file:
+    config = yaml.safe_load(defaults_file)
 
 def get_permissions(name, overwrite=True):
     """ Parses permissions from the ingested config dictionary """
@@ -126,8 +123,9 @@ class Queue(commands.Cog):
         for channel_name in config['channel_names'][:self.config['Nchannels']]:
             # create role
             if not discord.utils.get(ctx.guild.roles, name=channel_name):
-                await ctx.guild.create_role(name = channel_name, permissions = meeting_permission_obj)
-            mr = discord.utils.get(ctx.guild.roles, name=channel_name)
+                mr = await ctx.guild.create_role(name = channel_name, permissions = meeting_permission_obj)
+            else:
+                mr = discord.utils.get(ctx.guild.roles, name=channel_name)
 
             # create text channel
             channel_overwrites = copy(text_overwrites)
@@ -142,10 +140,12 @@ class Queue(commands.Cog):
                 await ctx.guild.create_voice_channel(name = channel_name, category=mct, overwrites=channel_overwrites)
 
         # create queue/welcome/chatter/admin/Waiting Room channels
-        if not discord.utils.get(ctx.guild.text_channels, name='welcome'):
-            await ctx.guild.create_text_channel(name = 'welcome', overwrites={er:er_ow_wt}, category=tct)
+        if discord.utils.get(ctx.guild.text_channels, name='welcome'):
             wt = discord.utils.get(ctx.guild.text_channels, name='welcome')
-            await wt.send(config['welcome_text'])
+            await wt.delete()
+        wt = await ctx.guild.create_text_channel(name = 'welcome', overwrites={er:er_ow_wt}, category=tct)
+        await wt.send(config['welcome_text'])
+
         if not discord.utils.get(ctx.guild.text_channels, name='chatter'):
             await ctx.guild.create_text_channel(name = 'chatter', overwrites={er:er_ow_ch}, category=tct)
         if not discord.utils.get(ctx.guild.text_channels, name=self.config['queue_channel']):
@@ -156,8 +156,11 @@ class Queue(commands.Cog):
         for admin_channel in self.config['admin_channels']:
             if not discord.utils.get(ctx.guild.text_channels, name=admin_channel):
                 await ctx.guild.create_text_channel(name = admin_channel, overwrites={er:er_ow_ad,qbr:qbr_ow_ad,tr:tr_ow_ad}, category=tct)
-        if not discord.utils.get(ctx.guild.voice_channels, name=self.config['waiting_room']):
-            await ctx.guild.create_voice_channel(name = self.config['waiting_room'], overwrites={er:er_ow_wr,tr:tr_ow_wr}, category=vct)
+        
+        if discord.utils.get(ctx.guild.voice_channels, name=self.config['waiting_room']):
+            wt = discord.utils.get(ctx.guild.voice_channels, name=self.config['waiting_room'])
+            await wt.delete()
+        await ctx.guild.create_voice_channel(name = self.config['waiting_room'], overwrites={er:er_ow_wr,tr:tr_ow_wr}, category=vct)
 
         await self.toggle(ctx)
 
