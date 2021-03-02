@@ -302,7 +302,8 @@ class Queue(commands.Cog):
 #---------------------------------------------------------
 # Bot Creation 
 #--------------------------------------------------------
-client = commands.Bot(command_prefix=config['queuebot']['prefix'])
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix=config['queuebot']['prefix'], intents=intents)
 
 @client.event
 async def on_ready():

@@ -43,10 +43,11 @@ You will need to create a server on Discord, by using the "Add a Server" button 
    queuebot:
      token: YOUR_TOKEN_HERE
    ```
-8. Navigate to the `OAuth2` section on the left
-9. Enable the `bot` scope
-10. Copy and paste the resulting url in the scopes section into a new tab/window of your browser
-11. Add the bot to your server.
+8. Return to the Dev Portal and enable the `Privileged Gateway Intents > Presence Intent` and `Privileged Gateway Intents > Server Members Intent` options.
+9. Navigate to the `OAuth2` section on the left
+10. Enable the `bot` scope
+11. Copy and paste the resulting url in the scopes section into a new tab/window of your browser
+12. Add the bot to your server.
 
 ### It's ALIVE - Running the bot
 
